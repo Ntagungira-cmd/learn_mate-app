@@ -12,6 +12,7 @@ import { Loader2, ArrowLeft, CheckCircle, XCircle, Award } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Input } from '@/components/ui/input';
 
 interface QuizResult {
   score: number;
@@ -36,7 +37,7 @@ export default function QuizPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<number, string>>({});
+  const [answers, setAnswers] = useState<Record<number, string | number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<QuizResult | null>(null);
 
@@ -47,10 +48,10 @@ export default function QuizPage() {
   const fetchQuiz = async () => {
     try {
       if (isOnline) {
-        const data = await api.getQuizById(quizId);
-        setQuiz(data as APIQuiz);
+        const response = await api.getQuizById(quizId);
+        const quizData = response.data?.quiz || response.quiz || response.data || response;
+        setQuiz(quizData as APIQuiz);
       } else {
-        // Try to find quiz in offline storage
         const offlineSubjects = await offlineManager.getAllOfflineSubjects();
         let foundQuiz: APIQuiz | null = null;
 
@@ -76,13 +77,13 @@ export default function QuizPage() {
     }
   };
 
-  const handleAnswerSelect = (questionId: number, answer: string) => {
+  const handleAnswerSelect = (questionId: number, answer: string | number) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
   };
 
   const handleSubmit = async () => {
     if (!quiz) return;
-
+    
     const unanswered = quiz.questions.filter(q => !answers[q.id]);
     if (unanswered.length > 0) {
       alert(`Please answer all questions. ${unanswered.length} question(s) remaining.`);
@@ -93,38 +94,106 @@ export default function QuizPage() {
     try {
       const submissionData = {
         quiz_id: quizId,
-        answers: quiz.questions.map(q => ({
-          question_id: q.id,
-          selected_answer: answers[q.id]
-        }))
+        answers: quiz.questions.map(q => {
+          let studentAnswer = answers[q.id];
+          
+          // For multiple choice, convert option ID back to option text for backend
+          if (q.question_type === 'multiple_choice' && typeof studentAnswer === 'number') {
+            const selectedOption = q.options?.find(opt => opt.id === studentAnswer);
+            studentAnswer = selectedOption?.option_text || '';
+          }
+          
+          return {
+            question_id: q.id,
+            student_answer: studentAnswer as string
+          };
+        })
       };
 
       if (isOnline) {
-        // For online mode, create attempt first then submit
-        const attempt = await api.startQuizAttempt(quizId);
-        const resultData = await api.submitQuiz(attempt.id, {
-          attempt_id: attempt.id,
+        const attemptResponse = await api.startQuizAttempt(quizId);
+        const attemptData = attemptResponse.data || attemptResponse;
+        
+        const submitResponse = await api.submitQuiz(quizId, {
+          attempt_id: attemptData.attempt_id,
           answers: submissionData.answers
         });
-        setResult(resultData as QuizResult);
+        
+        const resultData = submitResponse.data || submitResponse;
+        
+        setResult({
+          score: resultData.score,
+          total_questions: quiz.questions.length,
+          percentage: resultData.percentage,
+          passed: resultData.passed,
+          answers: resultData.feedback?.map((f: any) => {
+            const question = quiz.questions.find(q => q.id === f.question_id);
+            const studentAnswerId = answers[f.question_id];
+            
+            let correctAnswer = f.correct_answer || question?.correct_answer || '';
+            let selectedAnswerDisplay = '';
+            
+            if (question?.question_type === 'multiple_choice' && typeof studentAnswerId === 'number') {
+              // Find the correct and selected options by ID
+              const correctOption = question.options?.find(opt => opt.is_correct);
+              const selectedOption = question.options?.find(opt => opt.id === studentAnswerId);
+              
+              if (correctOption) {
+                correctAnswer = correctOption.option_text;
+              }
+              
+              if (selectedOption) {
+                selectedAnswerDisplay = selectedOption.option_text;
+              }
+            } else {
+              selectedAnswerDisplay = studentAnswerId as string;
+            }
+            
+            return {
+              question_id: f.question_id,
+              selected_answer: selectedAnswerDisplay,
+              correct_answer: correctAnswer,
+              is_correct: f.is_correct
+            };
+          }) || []
+        });
       } else {
-        // Queue for sync and calculate result locally
         await syncQueue.add({
           type: 'quiz_submit',
-          endpoint: `/student/quiz/${quizId}/submit`,
+          endpoint: `/quizzes/${quizId}/submit`,
           method: 'POST',
-          payload: submissionData
+          payload: {
+            answers: submissionData.answers
+          }
         });
 
-        // Calculate result locally
         let correct = 0;
         const resultAnswers = quiz.questions.map(q => {
-          const isCorrect = answers[q.id] === q.correct_answer;
+          const selectedAnswer = answers[q.id];
+          let isCorrect = false;
+          let selectedAnswerDisplay = '';
+          let correctAnswerDisplay = '';
+          
+          if (q.question_type === 'multiple_choice' && typeof selectedAnswer === 'number') {
+            const correctOption = q.options?.find(opt => opt.is_correct);
+            const selectedOption = q.options?.find(opt => opt.id === selectedAnswer);
+            
+            isCorrect = selectedOption?.is_correct === true;
+            
+            correctAnswerDisplay = correctOption?.option_text || '';
+            selectedAnswerDisplay = selectedOption?.option_text || '';
+          } else {
+            isCorrect = (selectedAnswer as string)?.toLowerCase() === q.correct_answer?.toLowerCase();
+            correctAnswerDisplay = q.correct_answer || '';
+            selectedAnswerDisplay = selectedAnswer as string;
+          }
+          
           if (isCorrect) correct++;
+          
           return {
             question_id: q.id,
-            selected_answer: answers[q.id],
-            correct_answer: q.correct_answer,
+            selected_answer: selectedAnswerDisplay,
+            correct_answer: correctAnswerDisplay,
             is_correct: isCorrect
           };
         });
@@ -168,7 +237,6 @@ export default function QuizPage() {
     );
   }
 
-  // Show results if quiz is submitted
   if (result) {
     return (
       <div className="space-y-6 max-w-3xl mx-auto">
@@ -238,13 +306,13 @@ export default function QuizPage() {
                             {index + 1}. {question.question_text}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            Your answer: <span className={answer?.is_correct ? 'text-green-600' : 'text-red-600'}>
+                            Your answer: <span className={answer?.is_correct ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
                               {answer?.selected_answer}
                             </span>
                           </p>
-                          {!answer?.is_correct && (
-                            <p className="text-sm text-green-600 mt-1">
-                              Correct answer: {answer?.correct_answer}
+                          {!answer?.is_correct && answer?.correct_answer && (
+                            <p className="text-sm text-green-600 mt-1 font-medium">
+                              Correct answer: {answer.correct_answer}
                             </p>
                           )}
                         </div>
@@ -275,7 +343,6 @@ export default function QuizPage() {
     );
   }
 
-  // Show quiz questions
   const question = quiz.questions[currentQuestion];
   const progress = ((currentQuestion + 1) / quiz.questions.length) * 100;
   const answeredCount = Object.keys(answers).length;
@@ -316,39 +383,107 @@ export default function QuizPage() {
               {currentQuestion + 1}. {question.question_text}
             </h3>
 
-            <div className="space-y-3">
-              {question.options && question.options.map((optionText, index) => {
-                const optionLetter = String.fromCharCode(65 + index); // A, B, C, D...
-                const isSelected = answers[question.id] === optionLetter;
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(question.id, optionLetter)}
-                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                      isSelected
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+            {/* Multiple Choice Questions */}
+            {question.question_type === 'multiple_choice' && (
+              <div className="space-y-3">
+                {question.options && question.options.map((option, index) => {
+                  const optionLetter = String.fromCharCode(65 + index);
+                  const isSelected = answers[question.id] === option.id;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswerSelect(question.id, option.id)}
+                      className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                         isSelected
-                          ? 'border-blue-600 bg-blue-600'
-                          : 'border-gray-300'
-                      }`}>
-                        {isSelected && (
-                          <CheckCircle className="h-4 w-4 text-white" />
-                        )}
+                          ? 'border-blue-600 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-600'
+                            : 'border-gray-300'
+                        }`}>
+                          {isSelected && (
+                            <CheckCircle className="h-4 w-4 text-white" />
+                          )}
+                        </div>
+                        <div>
+                          <span className="font-medium">{optionLetter}.</span> {option.option_text}
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-medium">{optionLetter}.</span> {optionText}
-                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* True/False Questions */}
+            {question.question_type === 'true_false' && (
+              <div className="flex gap-4">
+                <button
+                  onClick={() => handleAnswerSelect(question.id, 'true')}
+                  className={`flex-1 p-6 rounded-lg border-2 transition-all ${
+                    answers[question.id] === 'true'
+                      ? 'border-green-600 bg-green-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${
+                      answers[question.id] === 'true'
+                        ? 'border-green-600 bg-green-600'
+                        : 'border-gray-300'
+                    }`}>
+                      <CheckCircle className={`h-6 w-6 ${
+                        answers[question.id] === 'true' ? 'text-white' : 'text-gray-400'
+                      }`} />
                     </div>
-                  </button>
-                );
-              })}
-            </div>
+                    <span className="font-semibold text-lg">True</span>
+                  </div>
+                </button>
+                
+                <button
+                  onClick={() => handleAnswerSelect(question.id, 'false')}
+                  className={`flex-1 p-6 rounded-lg border-2 transition-all ${
+                    answers[question.id] === 'false'
+                      ? 'border-red-600 bg-red-50'
+                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center ${
+                      answers[question.id] === 'false'
+                        ? 'border-red-600 bg-red-600'
+                        : 'border-gray-300'
+                    }`}>
+                      <XCircle className={`h-6 w-6 ${
+                        answers[question.id] === 'false' ? 'text-white' : 'text-gray-400'
+                      }`} />
+                    </div>
+                    <span className="font-semibold text-lg">False</span>
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {/* Short Answer Questions */}
+            {question.question_type === 'short_answer' && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-muted-foreground">
+                  Your Answer:
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Type your answer here..."
+                  value={answers[question.id] || ''}
+                  onChange={(e) => handleAnswerSelect(question.id, e.target.value)}
+                  className="text-base"
+                />
+              </div>
+            )}
           </div>
 
           {/* Navigation */}

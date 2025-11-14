@@ -65,7 +65,11 @@ export interface Question {
   question_text: string;
   question_type: 'multiple_choice' | 'true_false' | 'short_answer';
   correct_answer: string;
-  options?: string[];
+  options?: Array<{
+    id: number;
+    option_text: string;
+    is_correct: boolean;
+  }>;
   points: number;
   order_number: number;
 }
