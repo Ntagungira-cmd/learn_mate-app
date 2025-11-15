@@ -75,7 +75,16 @@ export default function SubjectsPage() {
     setEnrolling(subjectId);
     try {
       await api.enrollInSubject(subjectId);
-      // Refresh data to update enrollment status
+      
+      setEnrolledSubjectIds(prev => new Set(prev).add(subjectId));
+      setSubjects(prevSubjects => 
+        prevSubjects.map(subject => 
+          subject.id === subjectId 
+            ? { ...subject, enrolled: true }
+            : subject
+        )
+      );
+      
       await fetchData();
     } catch (err: any) {
       console.error('Failed to enroll:', err);
