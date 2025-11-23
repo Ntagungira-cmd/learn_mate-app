@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BookOpen, LayoutDashboard, GraduationCap, LogOut } from 'lucide-react';
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function TeacherLayout({
   children,
@@ -15,6 +17,8 @@ export default function TeacherLayout({
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const t = useTranslations('teacher');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     if (user && user.role !== 'teacher' && user.role !== 'admin') {
@@ -42,7 +46,7 @@ export default function TeacherLayout({
               <GraduationCap className="h-8 w-8 text-blue-600" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">LearnMate</h1>
-                <p className="text-xs text-gray-500">Teacher Portal</p>
+                <p className="text-xs text-gray-500">{t('title')}</p>
               </div>
             </div>
 
@@ -55,7 +59,7 @@ export default function TeacherLayout({
                   className="flex items-center gap-2"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
+                  {t('dashboard')}
                 </TabsTrigger>
                 <TabsTrigger
                   value="subjects"
@@ -63,7 +67,7 @@ export default function TeacherLayout({
                   className="flex items-center gap-2"
                 >
                   <BookOpen className="h-4 w-4" />
-                  My Subjects
+                  {t('mySubjects')}
                 </TabsTrigger>
               </TabsList>
             </Tabs>
@@ -75,9 +79,10 @@ export default function TeacherLayout({
                 </p>
                 <p className="text-xs text-gray-500">{user?.email}</p>
               </div>
+              <LanguageSwitcher />
               <Button variant="outline" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                {tCommon('logout')}
               </Button>
             </div>
           </div>
@@ -92,7 +97,7 @@ export default function TeacherLayout({
                   className="flex items-center gap-2"
                 >
                   <LayoutDashboard className="h-4 w-4" />
-                  Dashboard
+                  {t('dashboard')}
                 </TabsTrigger>
                 <TabsTrigger
                   value="subjects"
@@ -100,7 +105,7 @@ export default function TeacherLayout({
                   className="flex items-center gap-2"
                 >
                   <BookOpen className="h-4 w-4" />
-                  Subjects
+                  {t('mySubjects')}
                 </TabsTrigger>
               </TabsList>
             </Tabs>

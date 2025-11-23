@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useTranslations } from 'next-intl';
 
 export default function AdminContentPage() {
   const router = useRouter();
@@ -35,6 +36,9 @@ export default function AdminContentPage() {
   const [gradeFilter, setGradeFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
+  const tSubjects = useTranslations('subjects');
 
   useEffect(() => {
     loadSubjects();

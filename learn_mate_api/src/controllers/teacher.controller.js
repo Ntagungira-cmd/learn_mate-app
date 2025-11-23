@@ -29,6 +29,7 @@ const getTeacherDashboard = asyncHandler(async (req, res) => {
   );
 
   const subjectWhereClause = isAdmin ? '' : 'WHERE s.created_by = ?';
+  const subjectPerformanceWhereClause = isAdmin ? '' : 'WHERE s.created_by = ?';
   const [studentCount] = await pool.query(
     `SELECT COUNT(DISTINCT e.student_id) as count
      FROM enrollments e
@@ -75,7 +76,7 @@ const getTeacherDashboard = asyncHandler(async (req, res) => {
      LEFT JOIN lessons l ON l.subject_id = s.id
      LEFT JOIN quizzes q ON q.lesson_id = l.id
      LEFT JOIN quiz_attempts qa ON qa.quiz_id = q.id AND qa.completed_at IS NOT NULL
-     ${whereClause}
+     ${subjectPerformanceWhereClause}
      GROUP BY s.id, s.name
      ORDER BY enrolled_students DESC
      LIMIT 5`,

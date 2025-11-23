@@ -11,10 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function RegisterPage() {
   const router = useRouter();
   const register = useAuthStore(state => state.register);
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   
   const [formData, setFormData] = useState({
     username: '',
@@ -77,11 +81,14 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-2xl">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">{t('registerTitle')}</CardTitle>
           <CardDescription className="text-center">
-            Join LearnMate and start your learning journey
+            {t('registerDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,7 +101,7 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="first_name">First Name</Label>
+                <Label htmlFor="first_name">{tCommon('firstName')}</Label>
                 <Input
                   id="first_name"
                   placeholder="John"
@@ -110,7 +117,7 @@ export default function RegisterPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="last_name">Last Name</Label>
+                <Label htmlFor="last_name">{tCommon('lastName')}</Label>
                 <Input
                   id="last_name"
                   placeholder="Doe"
@@ -127,10 +134,10 @@ export default function RegisterPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{tCommon('username')}</Label>
               <Input
                 id="username"
-                placeholder="johndoe"
+                placeholder={t('usernamePlaceholder')}
                 value={formData.username}
                 onChange={(e) => updateFormData('username', e.target.value)}
                 required
@@ -143,11 +150,11 @@ export default function RegisterPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{tCommon('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="john@example.com"
+                placeholder={t('emailPlaceholder')}
                 value={formData.email}
                 onChange={(e) => updateFormData('email', e.target.value)}
                 required
@@ -161,11 +168,11 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">{tCommon('password')}</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   value={formData.password}
                   onChange={(e) => updateFormData('password', e.target.value)}
                   required
@@ -182,7 +189,7 @@ export default function RegisterPage() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="••••••••"
+                  placeholder={t('passwordPlaceholder')}
                   value={formData.confirmPassword}
                   onChange={(e) => updateFormData('confirmPassword', e.target.value)}
                   required
@@ -193,7 +200,7 @@ export default function RegisterPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="grade_level">Grade Level</Label>
+                <Label htmlFor="grade_level">{t('gradeLevel')}</Label>
                 <Select
                   value={formData.grade_level.toString()}
                   onValueChange={(value) => updateFormData('grade_level', parseInt(value))}
@@ -216,7 +223,7 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="language">Preferred Language</Label>
+                <Label htmlFor="language">{t('preferredLanguage')}</Label>
                 <Select
                   value={formData.preferred_language}
                   onValueChange={(value) => updateFormData('preferred_language', value)}
@@ -227,7 +234,7 @@ export default function RegisterPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="en">English</SelectItem>
-                    <SelectItem value="ar">Arabic</SelectItem>
+                    <SelectItem value="ar">العربية</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -237,19 +244,19 @@ export default function RegisterPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
+                  {tCommon('loading')}
                 </>
               ) : (
-                'Create Account'
+                t('registerTitle')
               )}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
+            {t('hasAccount')}{' '}
             <Link href="/auth/login" className="text-primary hover:underline font-medium">
-              Sign in
+              {t('signIn')}
             </Link>
           </p>
         </CardFooter>

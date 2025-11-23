@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useAuthStore } from '@/lib/auth-store';
 import { BarChart3, Users, BookOpen, LogOut, LayoutDashboard, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LanguageSwitcher } from '@/components/language-switcher';
+import { useTranslations } from 'next-intl';
 
 export default function AdminLayout({
   children,
@@ -14,6 +16,8 @@ export default function AdminLayout({
 }) {
   const router = useRouter();
   const { user, logout, isLoading } = useAuthStore();
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     if (isLoading) return;
@@ -41,22 +45,22 @@ export default function AdminLayout({
 
   const navigation = [
     {
-      name: 'Dashboard',
+      name: t('dashboard'),
       href: '/admin/dashboard',
       icon: LayoutDashboard,
     },
     {
-      name: 'Users',
+      name: t('users'),
       href: '/admin/users',
       icon: Users,
     },
     {
-      name: 'Analytics',
+      name: t('analytics'),
       href: '/admin/analytics',
       icon: BarChart3,
     },
     {
-      name: 'Content',
+      name: t('content'),
       href: '/admin/content',
       icon: BookOpen,
     },
@@ -72,7 +76,7 @@ export default function AdminLayout({
               <Shield className="h-8 w-8 text-red-600" />
               <div>
                 <h1 className="text-xl font-bold text-gray-900">LearnMate</h1>
-                <p className="text-xs text-gray-500">Admin Portal</p>
+                <p className="text-xs text-gray-500">{t('title')}</p>
               </div>
             </Link>
             <div className="flex items-center space-x-4">
@@ -82,13 +86,14 @@ export default function AdminLayout({
                 </p>
                 <p className="text-xs text-gray-500">{user.email}</p>
               </div>
+              <LanguageSwitcher />
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleLogout}
               >
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                {tCommon('logout')}
               </Button>
             </div>
           </div>

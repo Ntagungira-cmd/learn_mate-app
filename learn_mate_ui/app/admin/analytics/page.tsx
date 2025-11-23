@@ -12,10 +12,12 @@ import {
   Award,
   Activity
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function AdminAnalyticsPage() {
   const [analytics, setAnalytics] = useState<PlatformAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const t = useTranslations('admin');
 
   useEffect(() => {
     loadAnalytics();

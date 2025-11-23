@@ -13,11 +13,13 @@ import {
   TrendingUp,
   Award
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function AdminDashboard() {
   const [analytics, setAnalytics] = useState<PlatformAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations('admin');
 
   useEffect(() => {
     loadAnalytics();
@@ -71,49 +73,49 @@ export default function AdminDashboard() {
 
   const statCards = [
     {
-      title: 'Total Users',
+      title: t('totalUsers'),
       value: analytics.user_statistics.total_users,
       icon: Users,
       description: 'All registered users',
       color: 'text-blue-600',
     },
     {
-      title: 'Students',
+      title: t('students'),
       value: getUserCountByRole('student'),
       icon: GraduationCap,
-      description: `${analytics.user_statistics.active_students_7days} active (7 days)`,
+      description: `${analytics.user_statistics.active_students_7days} ${t('activeStudents')} (7 days)`,
       color: 'text-green-600',
     },
     {
-      title: 'Teachers',
+      title: t('teachers'),
       value: getUserCountByRole('teacher'),
       icon: Users,
       description: 'Teaching on platform',
       color: 'text-purple-600',
     },
     {
-      title: 'Total Subjects',
+      title: t('totalSubjects'),
       value: analytics.content_statistics.total_subjects,
       icon: BookOpen,
-      description: `${analytics.content_statistics.total_lessons} lessons`,
+      description: `${analytics.content_statistics.total_lessons} ${t('totalLessons').toLowerCase()}`,
       color: 'text-orange-600',
     },
     {
-      title: 'Total Quizzes',
+      title: t('totalQuizzes'),
       value: analytics.content_statistics.total_quizzes,
       icon: FileText,
-      description: `${analytics.quiz_statistics.total_attempts} attempts`,
+      description: `${analytics.quiz_statistics.total_attempts} ${t('totalAttempts').toLowerCase()}`,
       color: 'text-pink-600',
     },
     {
-      title: 'Enrollments',
+      title: t('enrollments'),
       value: analytics.content_statistics.total_enrollments,
       icon: TrendingUp,
       description: 'Active enrollments',
       color: 'text-indigo-600',
     },
     {
-      title: 'Avg Quiz Score',
+      title: t('avgScore'),
       value: `${analytics.quiz_statistics.average_score}%`,
       icon: Award,
       description: 'Platform average',
@@ -124,7 +126,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Platform Analytics</h1>
+        <h1 className="text-3xl font-bold">{t('platformAnalytics')}</h1>
       </div>
 
       {/* Stats Grid */}
@@ -154,7 +156,7 @@ export default function AdminDashboard() {
       {analytics.recent_activity && analytics.recent_activity.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity (Last 7 Days)</CardTitle>
+            <CardTitle>{t('recentActivity')} ({t('lastDays')})</CardTitle>
             <CardDescription>New user registrations</CardDescription>
           </CardHeader>
           <CardContent>
@@ -168,7 +170,7 @@ export default function AdminDashboard() {
                     {new Date(activity.date).toLocaleDateString()}
                   </span>
                   <span className="text-sm text-gray-600">
-                    {activity.new_users} new user{activity.new_users !== 1 ? 's' : ''}
+                    {activity.new_users} {t('newUsers')}
                   </span>
                 </div>
               ))}
@@ -181,7 +183,7 @@ export default function AdminDashboard() {
       {analytics.popular_subjects && analytics.popular_subjects.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Most Popular Subjects</CardTitle>
+            <CardTitle>{t('popularSubjects')}</CardTitle>
             <CardDescription>By enrollment count</CardDescription>
           </CardHeader>
           <CardContent>
@@ -198,7 +200,7 @@ export default function AdminDashboard() {
                     <div>
                       <p className="font-medium">{subject.name}</p>
                       <p className="text-xs text-gray-500">
-                        Grade {subject.grade_level}
+                        {t('Grade')} {subject.grade_level}
                       </p>
                     </div>
                   </div>

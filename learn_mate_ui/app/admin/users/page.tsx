@@ -35,6 +35,7 @@ import {
   ChevronRight,
   UserCog
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 export default function AdminUsersPage() {
   const router = useRouter();
@@ -49,6 +50,8 @@ export default function AdminUsersPage() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserWithStats | null>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const t = useTranslations('admin');
+  const tCommon = useTranslations('common');
   const [createFormData, setCreateFormData] = useState({
     username: '',
     email: '',

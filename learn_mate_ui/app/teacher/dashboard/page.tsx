@@ -20,12 +20,15 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
+import { useTranslations } from 'next-intl';
 
 export default function TeacherDashboardPage() {
   const [dashboard, setDashboard] = useState<TeacherDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useTranslations('teacher');
+  const tSubjects = useTranslations('subjects');
 
   useEffect(() => {
     loadDashboard();
@@ -76,14 +79,14 @@ export default function TeacherDashboardPage() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('dashboard')}</h1>
           <p className="text-gray-500 mt-1">
             Overview of your teaching activities
           </p>
         </div>
         <Button onClick={() => router.push('/teacher/subjects')}>
           <BookOpen className="h-4 w-4 mr-2" />
-          Manage Subjects
+          {t('mySubjects')}
         </Button>
       </div>
 
@@ -91,7 +94,7 @@ export default function TeacherDashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Subjects</CardTitle>
+            <CardTitle className="text-sm font-medium">{tSubjects('title')}</CardTitle>
             <BookOpen className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
@@ -104,7 +107,7 @@ export default function TeacherDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Lessons</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('lessons')}</CardTitle>
             <FileText className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
@@ -117,7 +120,7 @@ export default function TeacherDashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Quizzes</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('quizzes')}</CardTitle>
             <ClipboardCheck className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
