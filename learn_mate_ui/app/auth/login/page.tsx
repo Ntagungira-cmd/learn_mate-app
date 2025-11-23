@@ -10,10 +10,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function LoginPage() {
   const router = useRouter();
   const login = useAuthStore(state => state.login);
+  const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,11 +41,14 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold text-center">Welcome to LearnMate</CardTitle>
+          <CardTitle className="text-2xl font-bold text-center">{t('loginTitle')}</CardTitle>
           <CardDescription className="text-center">
-            Sign in to your account to continue learning
+            {t('loginDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -53,11 +60,11 @@ export default function LoginPage() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{tCommon('email')}</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="student@example.com"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -66,11 +73,11 @@ export default function LoginPage() {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{tCommon('password')}</Label>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -82,19 +89,19 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Signing in...
+                  {tCommon('loading')}
                 </>
               ) : (
-                'Sign In'
+                t('signIn')
               )}
             </Button>
           </form>
         </CardContent>
         <CardFooter className="flex justify-center">
           <p className="text-sm text-muted-foreground">
-            Don't have an account?{' '}
+            {t('noAccount')}{' '}
             <Link href="/auth/register" className="text-primary hover:underline font-medium">
-              Sign up
+              {t('signUp')}
             </Link>
           </p>
         </CardFooter>

@@ -16,18 +16,22 @@ import {
   X
 } from 'lucide-react';
 import { useState } from 'react';
-
-const navItems = [
-  { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/student/subjects', label: 'Subjects', icon: BookOpen },
-  { href: '/student/progress', label: 'My Progress', icon: BarChart3 },
-];
+import { useTranslations } from 'next-intl';
+import { LanguageSwitcher } from '@/components/language-switcher';
 
 export default function StudentLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const t = useTranslations('student');
+  const tCommon = useTranslations('common');
+
+  const navItems = [
+    { href: '/student/dashboard', labelKey: 'dashboard', icon: LayoutDashboard },
+    { href: '/student/subjects', labelKey: 'mySubjects', icon: BookOpen },
+    { href: '/student/progress', labelKey: 'myProgress', icon: BarChart3 },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -60,9 +64,10 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
               <span className="text-sm text-gray-600">
                 {user?.first_name} {user?.last_name}
               </span>
+              <LanguageSwitcher />
               <Button variant="ghost" size="sm" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
-                Logout
+                {tCommon('logout')}
               </Button>
             </div>
           </div>
@@ -96,7 +101,7 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
                   `}
                 >
                   <Icon className="h-5 w-5" />
-                  {item.label}
+                  {t(item.labelKey)}
                 </Link>
               );
             })}
@@ -104,7 +109,7 @@ export default function StudentLayout({ children }: { children: ReactNode }) {
             <div className="md:hidden pt-4 border-t mt-4">
               <Button variant="ghost" className="w-full justify-start" onClick={handleLogout}>
                 <LogOut className="h-5 w-5 mr-3" />
-                Logout
+                {tCommon('logout')}
               </Button>
             </div>
           </nav>

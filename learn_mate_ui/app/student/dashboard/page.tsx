@@ -7,6 +7,7 @@ import { Loader2, BookOpen, CheckCircle, TrendingUp, Clock, Award } from 'lucide
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import { useTranslations } from 'next-intl';
 
 interface DashboardData {
   enrolled_subjects: number;
@@ -31,6 +32,8 @@ export default function StudentDashboard() {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const t = useTranslations('student');
+  const tCommon = useTranslations('common');
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -59,9 +62,9 @@ export default function StudentDashboard() {
   if (error) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <p className="text-red-800">Error loading dashboard: {error}</p>
+        <p className="text-red-800">{t('errorLoading')}: {error}</p>
         <Button onClick={() => window.location.reload()} className="mt-4">
-          Retry
+          {t('retry')}
         </Button>
       </div>
     );
@@ -74,11 +77,11 @@ export default function StudentDashboard() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">My Dashboard</h1>
+        <h1 className="text-3xl font-bold">{t('myDashboard')}</h1>
         <Link href="/student/subjects">
           <Button>
             <BookOpen className="h-4 w-4 mr-2" />
-            Browse Subjects
+            {t('browseSubjects')}
           </Button>
         </Link>
       </div>
@@ -87,20 +90,20 @@ export default function StudentDashboard() {
       <div className="grid md:grid-cols-3 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Enrolled Subjects</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('enrolledSubjects')}</CardTitle>
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{dashboard?.enrolled_subjects || 0}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Active courses
+              {t('activeCourses')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Completed Lessons</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('completedLessons')}</CardTitle>
             <CheckCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -108,14 +111,14 @@ export default function StudentDashboard() {
               {dashboard?.completed_lessons || 0} / {dashboard?.total_lessons || 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {overallProgress}% complete
+              {overallProgress}% {t('complete')}
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Overall Progress</CardTitle>
+            <CardTitle className="text-sm font-medium">{t('overallProgress')}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -129,7 +132,7 @@ export default function StudentDashboard() {
       {dashboard?.progress_by_subject && dashboard.progress_by_subject.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Your Subjects</CardTitle>
+            <CardTitle>{t('yourSubjects')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -139,7 +142,7 @@ export default function StudentDashboard() {
                     <div>
                       <h3 className="font-medium">{subject.subject_name}</h3>
                       <p className="text-sm text-muted-foreground">
-                        {subject.completed_lessons} / {subject.total_lessons} lessons completed
+                        {subject.completed_lessons} / {subject.total_lessons} {t('lessonsCompleted')}
                       </p>
                     </div>
                     <span className="text-sm font-medium">
@@ -158,7 +161,7 @@ export default function StudentDashboard() {
       {dashboard?.recent_activity && dashboard.recent_activity.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
+            <CardTitle>{t('recentActivity')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -191,13 +194,13 @@ export default function StudentDashboard() {
         <Card className="text-center py-12">
           <CardContent>
             <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Enrolled Subjects Yet</h3>
+            <h3 className="text-xl font-semibold mb-2">{t('noEnrolledYet')}</h3>
             <p className="text-muted-foreground mb-6">
-              Start your learning journey by browsing available subjects
+              {t('startLearningJourney')}
             </p>
             <Link href="/student/subjects">
               <Button size="lg">
-                Explore Subjects
+                {t('exploreSubjects')}
               </Button>
             </Link>
           </CardContent>
