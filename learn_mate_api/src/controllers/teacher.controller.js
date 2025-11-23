@@ -126,7 +126,7 @@ const getTeacherSubjects = asyncHandler(async (req, res) => {
   );
 
   const [countResult] = await pool.query(
-    `SELECT COUNT(*) as total FROM subjects ${whereClause}`,
+    `SELECT COUNT(*) as total FROM subjects s ${whereClause}`,
     whereParams
   );
 
